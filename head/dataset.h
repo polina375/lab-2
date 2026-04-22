@@ -53,7 +53,6 @@ namespace Dataset {
             file << p.x << "," << p.y << "," << p.label << "\n";
         return true;
     }
-    // === НОВАЯ ФУНКЦИЯ ОТ РОЛИ 3 ===
     // Разделяет датасет на обучающую и тестовую выборки
     // trainRatio = 0.8  →  80% train, 20% test
     static std::pair<std::vector<Point2D>, std::vector<Point2D>>
