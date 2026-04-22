@@ -1,11 +1,11 @@
-#include "types.h"
-#include "dataset.h"
-#include "linear.h"
-#include "evaluation.h"
-#include "console.h"
-#include "neuralnet.h"
-#include "trainer.h"
-#include "metrics.h"    
+#include "head/types.h"
+#include "head/dataset.h"
+#include "head/linear.h"
+#include "head/evaluation.h"
+#include "head/console.h"
+#include "head/neuralnet.h"
+#include "head/trainer.h"
+#include "head/metrics.h"    
 #include <ctime>
 #include <cstdlib>
 
