@@ -1,0 +1,128 @@
+#include "types.h"
+#include "dataset.h"
+#include "neuralnet.h"
+#include "trainer.h"
+#include "metrics.h"
+#include "console.h"
+
+#include <vector>
+#include <fstream>
+
+// 1. Тест: разделение датасета на train/test
+void test_split() {
+    auto data = Dataset::generate(100, 0.5f, 1.0f);
+    auto [train, test] = Dataset::split(data, 0.8f);
+
+    Console::info("Test: Dataset split");
+    Console::value("Train size", (float)train.size());
+    Console::value("Test size", (float)test.size());
+
+    if (train.size() != 80 || test.size() != 20)
+        throw "Split test failed";
+}
+
+// 2. Тест: прямой проход нейросети (forward) и предсказание класса
+void test_forward_predict() {
+    Neural::NeuralNetwork<float> net(4);
+    Point2D p = {0.3f, -0.2f, 0.0f};
+
+    float prob = net.forward(p);
+    int cls = net.predictClass(p);
+
+    Console::info("Test: Forward & predict");
+    Console::value("Probability", prob);
+    Console::value("Predicted class", (float)cls);
+
+    if (prob < 0.0f || prob > 1.0f)
+        throw "Forward output out of [0,1]";
+    if (cls != 0 && cls != 1)
+        throw "PredictClass output not 0 or 1";
+}
+
+// 3. Тест: обучение (не падает и даёт accuracy > 0.5 на маленьком наборе)
+void test_training() {
+    auto data = Dataset::generate(50, 0.75f, -0.25f);
+    Neural::NeuralNetwork<float> net(4);
+
+    float acc_before = Neural::Trainer::accuracy(net, data);
+    Console::value("Accuracy before training", acc_before);
+
+    Neural::Trainer::train(net, data, 30, 0.1f);
+
+    float acc_after = Neural::Trainer::accuracy(net, data);
+    Console::value("Accuracy after training", acc_after);
+
+    if (acc_after <= acc_before || acc_after < 0.6f)
+        throw "Training did not improve accuracy enough";
+}
+
+// 4. Тест: вычисление метрик (просто не падает и возвращает разумные значения)
+void test_metrics() {
+    auto data = Dataset::generate(20, 0.5f, 0.0f);
+    Neural::NeuralNetwork<float> net(4);
+    // Небольшое обучение, чтобы сеть что-то значила
+    Neural::Trainer::train(net, data, 10, 0.1f);
+
+    auto metrics = Metrics::evaluate(net, data);
+
+    Console::info("Test: Metrics");
+    Console::value("Accuracy", metrics.accuracy);
+    Console::value("Precision", metrics.precision);
+    Console::value("Recall", metrics.recall);
+    Console::value("F1", metrics.f1);
+
+    if (metrics.accuracy < 0.0f || metrics.accuracy > 1.0f)
+        throw "Metrics accuracy out of range";
+    if (metrics.precision < 0.0f || metrics.precision > 1.0f)
+        throw "Metrics precision out of range";
+    if (metrics.recall < 0.0f || metrics.recall > 1.0f)
+        throw "Metrics recall out of range";
+    if (metrics.f1 < 0.0f || metrics.f1 > 1.0f)
+        throw "Metrics F1 out of range";
+}
+
+// 5. Тест: сохранение предсказаний в CSV
+void test_save_predictions() {
+    auto data = Dataset::generate(10, 0.5f, 0.0f);
+    Neural::NeuralNetwork<float> net(4);
+
+    bool ok = Metrics::savePredictions(net, data, "test_pred_lab2.csv");
+
+    Console::info("Test: Save predictions CSV");
+    Console::value("Saved", ok);
+
+    if (!ok)
+        throw "savePredictions returned false";
+
+    std::ifstream file("test_pred_lab2.csv");
+    if (!file)
+        throw "CSV file not created";
+}
+
+int main() {
+    Console::info("Running tests for Lab #2...");
+
+    bool all_ok = true;
+
+    try { test_split(); }
+    catch (const char* msg) { Console::info(msg); all_ok = false; }
+
+    try { test_forward_predict(); }
+    catch (const char* msg) { Console::info(msg); all_ok = false; }
+
+    try { test_training(); }
+    catch (const char* msg) { Console::info(msg); all_ok = false; }
+
+    try { test_metrics(); }
+    catch (const char* msg) { Console::info(msg); all_ok = false; }
+
+    try { test_save_predictions(); }
+    catch (const char* msg) { Console::info(msg); all_ok = false; }
+
+    if (all_ok)
+        Console::info("ALL TESTS PASSED");
+    else
+        Console::info("SOME TESTS FAILED");
+
+    return all_ok ? 0 : 1;
+}
