@@ -23,7 +23,7 @@ namespace Neural {
         // Возвращает 0 или 1 в зависимости от того, превышает ли вероятность порог
         int predictClass(const Point2D& p, T threshold = T(0.5)) const;
 
-        // ===================== Геттеры и сеттеры =====================
+        //  Геттеры и сеттеры 
         // Эти методы нужны Trainer'у для обучения (backpropagation)
 
         int getHiddenSize() const { return hiddenSize; }
