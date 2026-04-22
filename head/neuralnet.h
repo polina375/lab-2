@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include <vector>
 #include <cmath>
-#include "types.h"      // Здесь находятся Arithmetic и Point2D
+#include "types.h"      //  находятся Arithmetic и Point2D
 #include "console.h"
 
 namespace Neural {
